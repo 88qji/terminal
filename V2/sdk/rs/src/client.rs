@@ -121,3 +121,121 @@ pub fn multisig_create_v2(
         program_id: program_id.unwrap_or(squads_multisig_program::ID),
     }
 }
+
+/// Creates a new multisig config transaction.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::system_program;
+/// use squads_multisig::state::ConfigAction;
+/// use squads_multisig::client::{
+///     ConfigTransactionCreateAccounts,
+///     ConfigTransactionCreateArgs,
+///     config_transaction_create
+/// };
+///
+/// let ix = config_transaction_create(
+///     ConfigTransactionCreateAccounts {
+///         multisig: Pubkey::new_unique(),
+///         creator: Pubkey::new_unique(),
+///         rent_payer: Pubkey::new_unique(),
+///         transaction: Pubkey::new_unique(),
+///         system_program: system_program::id(),
+///     },
+///     ConfigTransactionCreateArgs {
+///         actions: vec![ConfigAction::ChangeThreshold { new_threshold: 2 }],
+///         memo: None,
+///     },
+///     Some(squads_multisig_program::ID)
+/// );
+/// ```
+///
+pub fn config_transaction_create(
+    accounts: ConfigTransactionCreateAccounts,
+    args: ConfigTransactionCreateArgs,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: ConfigTransactionCreateData { args }.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
+
+/// Executes a multisig config transaction.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::system_program;
+/// use squads_multisig::state::ConfigAction;
+/// use squads_multisig::client::{
+///     ConfigTransactionExecuteAccounts,
+///     config_transaction_execute
+/// };
+///
+/// let ix = config_transaction_execute(
+///     ConfigTransactionExecuteAccounts {
+///         multisig: Pubkey::new_unique(),
+///         member: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         transaction: Pubkey::new_unique(),
+///         rent_payer: None,
+///         system_program: None,
+///     },
+///     vec![],
+///     Some(squads_multisig_program::ID)
+/// );
+/// ```
+pub fn config_transaction_execute(
+    accounts: ConfigTransactionExecuteAccounts,
+    spending_limit_accounts: Vec<Pubkey>,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    let program_id = program_id.unwrap_or(squads_multisig_program::ID);
+
+    let account_metas = [
+        accounts.into_account_metas(program_id),
+        // Spending Limit accounts are optional and are passed as remaining_accounts
+        // if the Config Transaction adds or removes some.
+        spending_limit_accounts
+            .into_iter()
+            .map(|key| AccountMeta::new(key, false))
+            .collect(),
+    ]
+    .concat();
+
+    Instruction {
+        accounts: account_metas,
+        data: ConfigTransactionExecuteData.data(),
+        program_id,
+    }
+}
+
+/// Creates a new multisig proposal.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::system_program;
+/// use squads_multisig::state::ConfigAction;
+/// use squads_multisig::client::{
+///     ProposalCreateAccounts,
+///     ProposalCreateArgs,
+///     proposal_create
+/// };
+///
+/// let ix = proposal_create(
+///     ProposalCreateAccounts {
+///         multisig: Pubkey::new_unique(),
+///         creator: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         rent_payer: Pubkey::new_unique(),
+///         system_program: system_program::id(),
+///     },
+///     ProposalCreateArgs {
+///         transaction_index: 0,
+///             draft: false,
+///     },
+///     Some(squads_multisig_program::ID)
+/// );
+/// ```
+///
