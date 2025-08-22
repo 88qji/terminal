@@ -19,3 +19,16 @@ pub use squads_multisig_program::instruction::ConfigTransactionExecute as Config
 pub use squads_multisig_program::instruction::MultisigCreate as MultisigCreateData;
 pub use squads_multisig_program::instruction::MultisigCreateV2 as MultisigCreateDataV2;
 pub use squads_multisig_program::instruction::ProposalApprove as ProposalApproveData;
+pub use squads_multisig_program::instruction::ProposalCancel as ProposalCancelData;
+pub use squads_multisig_program::instruction::ProposalCreate as ProposalCreateData;
+pub use squads_multisig_program::instruction::SpendingLimitUse as SpendingLimitUseData;
+pub use squads_multisig_program::instruction::VaultTransactionAccountsClose as VaultTransactionAccountsCloseData;
+pub use squads_multisig_program::instruction::VaultTransactionCreate as VaultTransactionCreateData;
+pub use squads_multisig_program::instruction::VaultTransactionExecute as VaultTransactionExecuteData;
+pub use squads_multisig_program::instructions::ConfigTransactionCreateArgs;
+pub use squads_multisig_program::instructions::MultisigCreateArgsV2;
+pub use squads_multisig_program::instructions::ProposalCreateArgs;
+pub use squads_multisig_program::instructions::ProposalVoteArgs;
+pub use squads_multisig_program::instructions::SpendingLimitUseArgs;
+pub use squads_multisig_program::instructions::VaultTransactionCreateArgs;
+use squads_multisig_program::TransactionMessage;
