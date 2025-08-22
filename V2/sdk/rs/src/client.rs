@@ -350,3 +350,59 @@ pub fn proposal_cancel(
 /// );
 /// ```
 ///
+
+pub fn spending_limit_use(
+    accounts: SpendingLimitUseAccounts,
+    args: SpendingLimitUseArgs,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    let program_id = program_id.unwrap_or(squads_multisig_program::ID);
+
+    Instruction {
+        accounts: accounts.into_account_metas(program_id),
+        data: SpendingLimitUseData { args }.data(),
+        program_id,
+    }
+}
+
+/// Creates a new vault transaction.
+/// Example:
+/// ```
+/// use squads_multisig::anchor_lang::AnchorSerialize;
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::{system_instruction, system_program};
+/// use squads_multisig::client::{
+///     VaultTransactionCreateAccounts,
+///     VaultTransactionCreateArgs,
+///     vault_transaction_create,
+/// };
+/// use squads_multisig::pda::get_vault_pda;
+/// use squads_multisig::vault_transaction::VaultTransactionMessageExt;
+/// use squads_multisig_program::TransactionMessage;
+///
+/// let multisig = Pubkey::new_unique();
+/// let vault_index = 0;
+/// let vault_pda = get_vault_pda(&multisig, vault_index, None).0;
+///
+/// // Create a vault transaction that includes 1 instruction - SOL transfer from the default vault.
+/// let message = TransactionMessage::try_compile(
+///     &vault_pda,
+///     &[system_instruction::transfer(&vault_pda, &Pubkey::new_unique(), 1_000_000)],
+///     &[]
+/// ).unwrap();
+///
+/// let ix = vault_transaction_create(
+///     VaultTransactionCreateAccounts {
+///         multisig,
+///         transaction: Pubkey::new_unique(),
+///         creator: Pubkey::new_unique(),
+///         rent_payer: Pubkey::new_unique(),
+///         system_program: system_program::id(),
+///     },
+///     vault_index,
+///     0,
+///     &message,
+///     None,
+///     None,
+/// );
+/// ```
