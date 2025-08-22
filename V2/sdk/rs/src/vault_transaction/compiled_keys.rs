@@ -51,3 +51,44 @@ impl CompiledKeys {
             key_meta_map,
         }
     }
+
+     pub(crate) fn try_into_message_components(
+        self,
+    ) -> Result<(MessageHeader, Vec<Pubkey>), CompileError> {
+        let try_into_u8 = |num: usize| -> Result<u8, CompileError> {
+            u8::try_from(num).map_err(|_| CompileError::AccountIndexOverflow)
+        };
+
+        let Self {
+            payer,
+            mut key_meta_map,
+        } = self;
+
+        if let Some(payer) = &payer {
+            key_meta_map.remove_entry(payer);
+        }
+
+        let writable_signer_keys: Vec<Pubkey> = payer
+            .into_iter()
+            .chain(
+                key_meta_map
+                    .iter()
+                    .filter_map(|(key, meta)| (meta.is_signer && meta.is_writable).then_some(*key)),
+            )
+            .collect();
+        let readonly_signer_keys: Vec<Pubkey> = key_meta_map
+            .iter()
+            .filter_map(|(key, meta)| (meta.is_signer && !meta.is_writable).then_some(*key))
+            .collect();
+        let writable_non_signer_keys: Vec<Pubkey> = key_meta_map
+            .iter()
+            .filter_map(|(key, meta)| (!meta.is_signer && meta.is_writable).then_some(*key))
+            .collect();
+        let readonly_non_signer_keys: Vec<Pubkey> = key_meta_map
+            .iter()
+            .filter_map(|(key, meta)| (!meta.is_signer && !meta.is_writable).then_some(*key))
+            .collect();
+
+        let signers_len = writable_signer_keys
+            .len()
+            .saturating_add(readonly_signer_keys.len());
