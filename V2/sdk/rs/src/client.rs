@@ -1,1 +1,21 @@
+use solana_client::nonblocking::rpc_client::RpcClient;
 
+pub use squads_multisig_program::accounts::BatchAccountsClose as BatchAccountsCloseAccounts;
+pub use squads_multisig_program::accounts::ConfigTransactionAccountsClose as ConfigTransactionAccountsCloseAccounts;
+pub use squads_multisig_program::accounts::ConfigTransactionCreate as ConfigTransactionCreateAccounts;
+pub use squads_multisig_program::accounts::ConfigTransactionExecute as ConfigTransactionExecuteAccounts;
+pub use squads_multisig_program::accounts::MultisigCreateV2 as MultisigCreateAccountsV2;
+pub use squads_multisig_program::accounts::ProposalCreate as ProposalCreateAccounts;
+pub use squads_multisig_program::accounts::ProposalVote as ProposalVoteAccounts;
+pub use squads_multisig_program::accounts::SpendingLimitUse as SpendingLimitUseAccounts;
+pub use squads_multisig_program::accounts::VaultBatchTransactionAccountClose as VaultBatchTransactionAccountCloseAccounts;
+pub use squads_multisig_program::accounts::VaultTransactionAccountsClose as VaultTransactionAccountsCloseAccounts;
+pub use squads_multisig_program::accounts::VaultTransactionCreate as VaultTransactionCreateAccounts;
+pub use squads_multisig_program::accounts::VaultTransactionExecute as VaultTransactionExecuteAccounts;
+use squads_multisig_program::anchor_lang::AnchorSerialize;
+pub use squads_multisig_program::instruction::ConfigTransactionAccountsClose as ConfigTransactionAccountsCloseData;
+pub use squads_multisig_program::instruction::ConfigTransactionCreate as ConfigTransactionCreateData;
+pub use squads_multisig_program::instruction::ConfigTransactionExecute as ConfigTransactionExecuteData;
+pub use squads_multisig_program::instruction::MultisigCreate as MultisigCreateData;
+pub use squads_multisig_program::instruction::MultisigCreateV2 as MultisigCreateDataV2;
+pub use squads_multisig_program::instruction::ProposalApprove as ProposalApproveData;
