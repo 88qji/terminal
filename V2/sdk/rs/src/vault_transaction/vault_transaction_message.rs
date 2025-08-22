@@ -137,3 +137,66 @@ pub trait VaultTransactionMessageExt {
                 }
             })
             .collect::<Vec<_>>();
+
+            // And the last go the accounts that will be loaded with address lookup tables.
+        let loaded_account_metas = message
+            .address_table_lookups
+            .iter()
+            .map(|lookup| {
+                let lookup_table_account = address_lookup_tables
+                    .get(&lookup.account_key)
+                    .ok_or(Error::InvalidAddressLookupTableAccount)?;
+
+                // For each lookup, fist list writable, then readonly account metas.
+                lookup
+                    .writable_indexes
+                    .iter()
+                    .map(|&index| {
+                        let pubkey = lookup_table_account
+                            .addresses
+                            .get(index as usize)
+                            .ok_or(Error::InvalidAddressLookupTableAccount)?
+                            .to_owned();
+
+                        Ok(AccountMeta {
+                            pubkey,
+                            is_writable: true,
+                            is_signer: false,
+                        })
+                    })
+                    .chain(lookup.readonly_indexes.iter().map(|&index| {
+                        let pubkey = lookup_table_account
+                            .addresses
+                            .get(index as usize)
+                            .ok_or(Error::InvalidAddressLookupTableAccount)?
+                            .to_owned();
+
+                        Ok(AccountMeta {
+                            pubkey,
+                            is_writable: false,
+                            is_signer: false,
+                        })
+                    }))
+                    .collect::<Result<Vec<_>, Error>>()
+            })
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
+
+        // endregion: -- Account Metas --
+
+        Ok([
+            lookup_table_account_metas,
+            static_account_metas,
+            loaded_account_metas,
+        ]
+        .concat())
+    }
+}
+
+impl VaultTransactionMessageExt for TransactionMessage {
+    fn as_transaction_message(&self) -> &TransactionMessage {
+        self
+    }
+}
