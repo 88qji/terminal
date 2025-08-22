@@ -92,3 +92,51 @@ impl CompiledKeys {
         let signers_len = writable_signer_keys
             .len()
             .saturating_add(readonly_signer_keys.len());
+         let header = MessageHeader {
+            num_required_signatures: try_into_u8(signers_len)?,
+            num_readonly_signed_accounts: try_into_u8(readonly_signer_keys.len())?,
+            num_readonly_unsigned_accounts: try_into_u8(readonly_non_signer_keys.len())?,
+        };
+
+        let static_account_keys = std::iter::empty()
+            .chain(writable_signer_keys)
+            .chain(readonly_signer_keys)
+            .chain(writable_non_signer_keys)
+            .chain(readonly_non_signer_keys)
+            .collect();
+
+        Ok((header, static_account_keys))
+    }
+
+    #[cfg(not(target_os = "solana"))]
+    pub(crate) fn try_extract_table_lookup(
+        &mut self,
+        lookup_table_account: &AddressLookupTableAccount,
+    ) -> Result<Option<(MessageAddressTableLookup, LoadedAddresses)>, CompileError> {
+        let (writable_indexes, drained_writable_keys) = self
+            .try_drain_keys_found_in_lookup_table(&lookup_table_account.addresses, |meta| {
+                !meta.is_signer && !meta.is_invoked && meta.is_writable
+            })?;
+        let (readonly_indexes, drained_readonly_keys) = self
+            .try_drain_keys_found_in_lookup_table(&lookup_table_account.addresses, |meta| {
+                !meta.is_signer && !meta.is_invoked && !meta.is_writable
+            })?;
+
+        // Don't extract lookup if no keys were found
+        if writable_indexes.is_empty() && readonly_indexes.is_empty() {
+            return Ok(None);
+        }
+
+        Ok(Some((
+            MessageAddressTableLookup {
+                account_key: lookup_table_account.key,
+                writable_indexes,
+                readonly_indexes,
+            },
+            LoadedAddresses {
+                writable: drained_writable_keys,
+                readonly: drained_readonly_keys,
+            },
+        )))
+    }
+
