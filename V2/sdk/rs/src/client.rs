@@ -239,3 +239,47 @@ pub fn config_transaction_execute(
 /// );
 /// ```
 ///
+
+pub fn proposal_create(
+    accounts: ProposalCreateAccounts,
+    args: ProposalCreateArgs,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: ProposalCreateData { args }.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
+
+/// Votes "approve" on a multisig proposal.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::client::{
+///     ProposalVoteAccounts,
+///     ProposalVoteArgs,
+///     proposal_approve,
+/// };
+///
+/// let ix = proposal_approve(
+///     ProposalVoteAccounts {
+///         multisig: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         member: Pubkey::new_unique(),
+///     },
+///     ProposalVoteArgs { memo: None },
+///     Some(squads_multisig_program::ID)
+/// );
+/// ```
+pub fn proposal_approve(
+    accounts: ProposalVoteAccounts,
+    args: ProposalVoteArgs,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: ProposalApproveData { args }.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
