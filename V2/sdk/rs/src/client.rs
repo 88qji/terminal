@@ -469,3 +469,41 @@ pub fn vault_transaction_create(
 /// );
 ///
 /// ```
+
+pub fn vault_transaction_execute(
+    accounts: VaultTransactionExecuteAccounts,
+    vault_index: u8,
+    num_ephemeral_signers: u8,
+    message: &TransactionMessage,
+    address_lookup_table_accounts: &[AddressLookupTableAccount],
+    program_id: Option<Pubkey>,
+) -> ClientResult<Instruction> {
+    let program_id = program_id.unwrap_or(squads_multisig_program::ID);
+
+    let vault_pda = get_vault_pda(&accounts.multisig, vault_index, Some(&program_id)).0;
+
+    let accounts_for_execute = message
+        .get_accounts_for_execute(
+            &vault_pda,
+            &accounts.transaction,
+            &address_lookup_table_accounts,
+            num_ephemeral_signers,
+            &program_id,
+        )
+        .map_err(|err| match err {
+            Error::InvalidAddressLookupTableAccount => {
+                ClientError::InvalidAddressLookupTableAccount
+            }
+            Error::InvalidTransactionMessage => ClientError::InvalidTransactionMessage,
+        })?;
+
+    let mut accounts = accounts.to_account_metas(Some(false));
+    // Append the accounts required for executing the inner instructions.
+    accounts.extend(accounts_for_execute.into_iter());
+
+    Ok(Instruction {
+        accounts,
+        data: VaultTransactionExecuteData {}.data(),
+        program_id,
+    })
+}
