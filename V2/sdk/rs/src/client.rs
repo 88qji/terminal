@@ -646,3 +646,53 @@ pub mod utils {
             ]
         }
     }
+
+
+ #[cfg(test)]
+    mod test {
+        use crate::anchor_lang::prelude::Pubkey;
+        use crate::anchor_lang::ToAccountMetas;
+        use crate::client::utils::IntoAccountMetas;
+        use squads_multisig_program::accounts::SpendingLimitUse;
+
+        #[test]
+        fn spending_limit_use_into_account_metas_matches_anchor_implementation() {
+            let accounts = SpendingLimitUse {
+                multisig: Pubkey::new_unique(),
+                member: Pubkey::new_unique(),
+                spending_limit: Pubkey::new_unique(),
+                vault: Pubkey::new_unique(),
+                destination: Pubkey::new_unique(),
+                system_program: Some(Pubkey::new_unique()),
+                mint: Some(Pubkey::new_unique()),
+                vault_token_account: Some(Pubkey::new_unique()),
+                destination_token_account: Some(Pubkey::new_unique()),
+                token_program: Some(Pubkey::new_unique()),
+            };
+
+            // When program_id is the canonical one our implementation should match the anchor one.
+            let anchor_metas = accounts.to_account_metas(Some(false));
+            let sdk_metas = accounts.into_account_metas(squads_multisig_program::ID);
+
+            assert_eq!(anchor_metas, sdk_metas);
+        }
+
+        #[test]
+        fn config_transaction_execute_into_account_metas_matches_anchor_implementation() {
+            let accounts = squads_multisig_program::accounts::ConfigTransactionExecute {
+                multisig: Pubkey::new_unique(),
+                member: Pubkey::new_unique(),
+                proposal: Pubkey::new_unique(),
+                transaction: Pubkey::new_unique(),
+                rent_payer: Some(Pubkey::new_unique()),
+                system_program: Some(Pubkey::new_unique()),
+            };
+
+            // When program_id is the canonical one our implementation should match the anchor one.
+            let anchor_metas = accounts.to_account_metas(Some(false));
+            let sdk_metas = accounts.into_account_metas(squads_multisig_program::ID);
+
+            assert_eq!(anchor_metas, sdk_metas);
+        }
+    }
+}
