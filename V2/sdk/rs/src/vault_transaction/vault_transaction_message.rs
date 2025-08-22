@@ -105,3 +105,35 @@ pub trait VaultTransactionMessageExt {
             .into_iter()
             .map(|alt| (alt.key, alt))
             .collect::<HashMap<_, _>>();
+
+      // endregion: -- address_lookup_tables map --
+
+        // region: -- Account Metas --
+
+        // First go the lookup table accounts used by the transaction. They are needed for on-chain validation.
+        let lookup_table_account_metas = address_lookup_table_accounts
+            .iter()
+            .map(|alt| AccountMeta {
+                pubkey: alt.key,
+                is_writable: false,
+                is_signer: false,
+            })
+            .collect::<Vec<_>>();
+
+        // Then come static account keys included into the message.
+        let static_account_metas = message
+            .account_keys
+            .iter()
+            .enumerate()
+            .map(|(index, &pubkey)| {
+                AccountMeta {
+                    pubkey,
+                    is_writable: message.is_static_writable_index(index),
+                    // NOTE: vaultPda and ephemeralSignerPdas cannot be marked as signers,
+                    // because they are PDAs and hence won't have their signatures on the transaction.
+                    is_signer: message.is_signer_index(index)
+                        && &pubkey != vault_pda
+                        && !ephemeral_signer_pdas.contains(&pubkey),
+                }
+            })
+            .collect::<Vec<_>>();
