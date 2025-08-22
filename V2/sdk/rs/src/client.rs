@@ -406,3 +406,66 @@ pub fn spending_limit_use(
 ///     None,
 /// );
 /// ```
+
+pub fn vault_transaction_create(
+    accounts: VaultTransactionCreateAccounts,
+    vault_index: u8,
+    num_ephemeral_signers: u8,
+    message: &TransactionMessage,
+    memo: Option<String>,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    let args = VaultTransactionCreateArgs {
+        vault_index,
+        ephemeral_signers: num_ephemeral_signers,
+        transaction_message: message.try_to_vec().unwrap(),
+        memo,
+    };
+
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: VaultTransactionCreateData { args }.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
+
+/// Executes a vault transaction.
+/// Example:
+/// ```
+/// use squads_multisig::anchor_lang::AnchorSerialize;
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::{system_instruction, system_program};
+/// use squads_multisig::client::{
+///     VaultTransactionExecuteAccounts,
+///     vault_transaction_execute
+/// };
+/// use squads_multisig::pda::get_vault_pda;
+/// use squads_multisig::vault_transaction::VaultTransactionMessageExt;
+/// use squads_multisig_program::TransactionMessage;
+///
+/// let multisig = Pubkey::new_unique();
+/// let vault_index = 0;
+/// let vault_pda = get_vault_pda(&multisig, vault_index, None).0;
+///
+/// // Create a vault transaction that includes 1 instruction - SOL transfer from the default vault.
+/// let message = TransactionMessage::try_compile(
+///     &vault_pda,
+///     &[system_instruction::transfer(&vault_pda, &Pubkey::new_unique(), 1_000_000)],
+///     &[]
+/// ).unwrap();
+///
+/// let ix = vault_transaction_execute(
+///     VaultTransactionExecuteAccounts {
+///         multisig,
+///         transaction: Pubkey::new_unique(),
+///         member: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///     },
+///     0,
+///     0,
+///     &message,
+///     &[],
+///     None,
+/// );
+///
+/// ```
