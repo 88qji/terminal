@@ -283,3 +283,70 @@ pub fn proposal_approve(
         program_id: program_id.unwrap_or(squads_multisig_program::ID),
     }
 }
+
+/// Votes "cancel" on a multisig proposal.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::client::{
+///     ProposalVoteAccounts,
+///     ProposalVoteArgs,
+///     proposal_cancel,
+/// };
+///
+/// let ix = proposal_cancel(
+///     ProposalVoteAccounts {
+///         multisig: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         member: Pubkey::new_unique(),
+///     },
+///     ProposalVoteArgs { memo: None },
+///     Some(squads_multisig_program::ID)
+/// );
+/// ```
+pub fn proposal_cancel(
+    accounts: ProposalVoteAccounts,
+    args: ProposalVoteArgs,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: ProposalCancelData { args }.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
+
+/// Use a Spending Limit to transfer tokens from a multisig vault to a destination account.
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::pubkey::Pubkey;
+/// use squads_multisig::solana_program::system_program;
+/// use squads_multisig::solana_program::native_token::LAMPORTS_PER_SOL;
+/// use squads_multisig::client::{
+///     SpendingLimitUseAccounts,
+///     SpendingLimitUseArgs,
+///     spending_limit_use,
+/// };
+///
+/// let ix = spending_limit_use(
+///     SpendingLimitUseAccounts {
+///         multisig: Pubkey::new_unique(),
+///         member: Pubkey::new_unique(),
+///         spending_limit: Pubkey::new_unique(),
+///         vault: Pubkey::new_unique(),
+///         destination: Pubkey::new_unique(),
+///         system_program: Some(system_program::id()),
+///         mint: None,
+///         vault_token_account: None,
+///         destination_token_account: None,
+///         token_program: None,
+///     },
+///     SpendingLimitUseArgs {
+///         amount: 1 * LAMPORTS_PER_SOL,
+///         decimals: 9,
+///         memo: None
+///     },
+///     None,
+/// );
+/// ```
+///
