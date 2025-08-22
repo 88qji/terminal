@@ -140,3 +140,36 @@ impl CompiledKeys {
         )))
     }
 
+     #[cfg(not(target_os = "solana"))]
+    fn try_drain_keys_found_in_lookup_table(
+        &mut self,
+        lookup_table_addresses: &[Pubkey],
+        key_meta_filter: impl Fn(&CompiledKeyMeta) -> bool,
+    ) -> Result<(Vec<u8>, Vec<Pubkey>), CompileError> {
+        let mut lookup_table_indexes = Vec::new();
+        let mut drained_keys = Vec::new();
+
+        for search_key in self
+            .key_meta_map
+            .iter()
+            .filter_map(|(key, meta)| key_meta_filter(meta).then_some(key))
+        {
+            for (key_index, key) in lookup_table_addresses.iter().enumerate() {
+                if key == search_key {
+                    let lookup_table_index = u8::try_from(key_index)
+                        .map_err(|_| CompileError::AddressTableLookupIndexOverflow)?;
+
+                    lookup_table_indexes.push(lookup_table_index);
+                    drained_keys.push(*search_key);
+                    break;
+                }
+            }
+        }
+
+        for key in &drained_keys {
+            self.key_meta_map.remove_entry(key);
+        }
+
+        Ok((lookup_table_indexes, drained_keys))
+    }
+}
