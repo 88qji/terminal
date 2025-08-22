@@ -79,3 +79,29 @@ pub trait VaultTransactionMessageExt {
                 .into(),
         })
     }
+
+     fn get_accounts_for_execute(
+        &self,
+        vault_pda: &Pubkey,
+        transaction_pda: &Pubkey,
+        address_lookup_table_accounts: &[AddressLookupTableAccount],
+        num_ephemeral_signers: u8,
+        program_id: &Pubkey,
+    ) -> Result<Vec<AccountMeta>, Error> {
+        let message = VaultTransactionMessage::try_from(self.as_transaction_message().to_owned())
+            .map_err(|_| Error::InvalidTransactionMessage)?;
+
+        let ephemeral_signer_pdas: Vec<Pubkey> = (0..num_ephemeral_signers)
+            .into_iter()
+            .map(|ephemeral_signer_index| {
+                get_ephemeral_signer_pda(transaction_pda, ephemeral_signer_index, Some(program_id))
+                    .0
+            })
+            .collect();
+
+        // region: -- address_lookup_tables map --
+
+        let address_lookup_tables = address_lookup_table_accounts
+            .into_iter()
+            .map(|alt| (alt.key, alt))
+            .collect::<HashMap<_, _>>();
