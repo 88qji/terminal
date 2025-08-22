@@ -507,3 +507,72 @@ pub fn vault_transaction_execute(
         program_id,
     })
 }
+
+/// Closes a `ConfigTransaction` and the corresponding `Proposal`.
+/// `transaction` can be closed if either:
+/// - the `proposal` is in a terminal state: `Executed`, `Rejected`, or `Cancelled`.
+/// - the `proposal` is stale.
+///
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::{pubkey::Pubkey, system_program};
+/// use squads_multisig::client::{
+///    ConfigTransactionAccountsCloseAccounts,
+///    config_transaction_accounts_close
+/// };
+///
+/// let ix = config_transaction_accounts_close(
+///     ConfigTransactionAccountsCloseAccounts {
+///         multisig: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         transaction: Pubkey::new_unique(),
+///         rent_collector: Pubkey::new_unique(),
+///         system_program: system_program::id(),
+///     },
+///     None,
+/// );
+pub fn config_transaction_accounts_close(
+    accounts: ConfigTransactionAccountsCloseAccounts,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: ConfigTransactionAccountsCloseData {}.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
+
+/// Closes a `VaultTransaction` and the corresponding `Proposal`.
+/// `transaction` can be closed if either:
+/// - the `proposal` is in a terminal state: `Executed`, `Rejected`, or `Cancelled`.
+/// - the `proposal` is stale and not `Approved`.
+///
+/// Example:
+/// ```
+/// use squads_multisig::solana_program::{pubkey::Pubkey, system_program};
+/// use squads_multisig::client::{
+///     VaultTransactionAccountsCloseAccounts,
+///     vault_transaction_accounts_close
+/// };
+///
+/// let ix = vault_transaction_accounts_close(
+///     VaultTransactionAccountsCloseAccounts {
+///         multisig: Pubkey::new_unique(),
+///         proposal: Pubkey::new_unique(),
+///         transaction: Pubkey::new_unique(),
+///         rent_collector: Pubkey::new_unique(),
+///         system_program: system_program::id(),
+///     },
+///     None,
+/// );
+/// ```
+pub fn vault_transaction_accounts_close(
+    accounts: VaultTransactionAccountsCloseAccounts,
+    program_id: Option<Pubkey>,
+) -> Instruction {
+    Instruction {
+        accounts: accounts.to_account_metas(Some(false)),
+        data: VaultTransactionAccountsCloseData {}.data(),
+        program_id: program_id.unwrap_or(squads_multisig_program::ID),
+    }
+}
