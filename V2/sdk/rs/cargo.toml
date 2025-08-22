@@ -8,3 +8,14 @@ license = "MIT OR Apache-2.0"
 homepage = "https://squads.so"
 authors = ["Valentin Madrid <valentin@incility.com>"]
 documentation = "https://developers.terminal.so"
+
+[lib]
+name = "terminal_multisig"
+
+[dependencies]
+futures = { version = "0.3.28" , features = ["async-await", "alloc"] }
+solana-client = "1.17.4"
+thiserror = "1.0.48"
+
+[features]
+default = []
