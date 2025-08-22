@@ -32,3 +32,27 @@ pub use squads_multisig_program::instructions::ProposalVoteArgs;
 pub use squads_multisig_program::instructions::SpendingLimitUseArgs;
 pub use squads_multisig_program::instructions::VaultTransactionCreateArgs;
 use squads_multisig_program::TransactionMessage;
+
+use crate::anchor_lang::prelude::Pubkey;
+use crate::anchor_lang::AccountDeserialize;
+use crate::anchor_lang::{
+    solana_program::instruction::Instruction, InstructionData, ToAccountMetas,
+};
+use crate::client::utils::IntoAccountMetas;
+use crate::error::ClientError;
+use crate::pda::get_vault_pda;
+use crate::solana_program::address_lookup_table_account::AddressLookupTableAccount;
+use crate::solana_program::instruction::AccountMeta;
+use crate::state::{Multisig, SpendingLimit};
+use crate::vault_transaction::{Error, VaultTransactionMessageExt};
+use crate::ClientResult;
+
+/// Gets a `Multisig` account from the chain.
+pub async fn get_multisig(rpc_client: &RpcClient, multisig_key: &Pubkey) -> ClientResult<Multisig> {
+    let multisig_account = rpc_client.get_account(multisig_key).await?;
+
+    let multisig = Multisig::try_deserialize(&mut multisig_account.data.as_slice())
+        .map_err(|_| ClientError::DeserializationError)?;
+
+    Ok(multisig)
+}
