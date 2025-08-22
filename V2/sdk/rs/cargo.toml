@@ -1,1 +1,10 @@
 
+[package]
+name = "terminal-multisig"
+version = "2.1.0"
+description = "An SDK for building automated programs on Solana"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+homepage = "https://squads.so"
+authors = ["Valentin Madrid <valentin@incility.com>"]
+documentation = "https://developers.terminal.so"
